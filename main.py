@@ -40,7 +40,7 @@ def generate_char_map(dir):
                 print("")
 
                 texture = cv2.imread(file_path)
-                w = round(30)
+                w = round(20)
                 h = round(1.27 * w)
                 texture = cv2.resize(texture, (h, w))
 
@@ -60,49 +60,58 @@ b_img = cv2.resize(b_img, (500, 150))
 """
 characters = generate_char_map("letters")
 
-string = "bacbabbbbbbbb"
+string = "bacbabbbbbbbbbbbb bbbb"
 
 
 collumn = 0
 row = 0
 
+right_offset = 100
 
 for index in range(len(string)):
     char = string[index]
+    if char != " ":
+        try:
+            texture = characters[char]
+            texture_h, texture_w, _ = texture.shape
 
-    try:
-        texture = characters[char]
-        texture_h, texture_w, _ = texture.shape
+            image_h, image_w, image_c = texture.shape
 
-        image_h, image_w, image_c = texture.shape
+            x_starting = 110
+            x_spacing = 2
+            x_indent = 50
 
-        x_starting = 110
-        x_spacing = 10
-        x_indent = 50
+            y_starting = 120
+            y_spacing = 2
 
-        y_starting = 120
-        y_spacing = 10
+            print((image_w + x_spacing) * (collumn + 1) + x_starting)
+            if (image_w + x_spacing) * (
+                collumn + 1
+            ) + x_starting >= canvas_w - right_offset:
+                print("Goes over")
+                collumn = 0
+                row += 1
 
-        print((image_w + x_spacing) * (collumn + 1) + x_starting)
-        if (image_w + x_spacing) * (collumn + 1) + x_starting >= canvas_w:
-            print("Goes over")
-            collumn = 0
-            row += 1
+            x_offset = 0
+            y_offset = 0
 
-        x_offset = (image_w + x_spacing) * (collumn) + x_starting
-        y_offset = (row) * (y_spacing + image_h) + y_starting
+            if index == 0:
+                # x_offset += x_indent
+                collumn += 1
+            x_offset += (image_w + x_spacing) * (collumn) + x_starting
+            y_offset += (row) * (y_spacing + image_h) + y_starting
 
-        if (index == 0):
-            x_offset += x_indent
+            canvas[
+                y_offset : y_offset + texture.shape[0],
+                x_offset : x_offset + texture.shape[1],
+            ] = texture
 
-        canvas[
-            y_offset : y_offset + texture.shape[0],
-            x_offset : x_offset + texture.shape[1],
-        ] = texture
-
+            collumn += 1
+        except KeyError:
+            print("Letter " + char + " doesn't exist")
+    else:
+        print("Space at index " + str(index) + " is found.")
         collumn += 1
-    except KeyError:
-        print("Letter " + char + " doesn't exist")
 
 
 def display_paper(canvas, dim):
